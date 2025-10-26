@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reserva de Cita | PawCare</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+
+<header>
+    <nav class="navbar">
+        <div class="logo">Paw<span>Care</span></div>
+        <div class="auth-buttons">
+            <a href="index.html" class="btn secondary">Inicio</a>
+            <a href="#" class="btn primary">Cerrar Sesión</a>
+        </div>
+    </nav>
+</header>
+
+
+<main class="dashboard">
+    <h1>Reserva de Cita</h1>
+    <p>Complete cada sección para registrar la cita de su mascota.</p>
+
+    <form class="reservation-form">
+
+
+        <section class="form-section">
+            <h2>Mascota</h2>
+            <div class="form-group">
+                <label>Nombre</label>
+                <input type="text" name="petName" required>
+            </div>
+
+            <div class="form-group">
+                <label>Especie</label>
+                <input type="text" name="species" placeholder="Perro, Gato..." required>
+            </div>
+
+            <div class="form-group">
+                <label>Género</label>
+                <select name="gender" required>
+                    <option value="">Seleccione</option>
+                    <option value="Macho">Macho</option>
+                    <option value="Hembra">Hembra</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Edad</label>
+                <input type="number" name="age" min="0" required>
+            </div>
+        </section>
+
+
+        <section class="form-section">
+            <h2>Cliente</h2>
+            <div class="form-group">
+                <label>Nombre</label>
+                <input type="text" name="clientName" required>
+            </div>
+
+            <div class="form-group">
+                <label>Apellido</label>
+                <input type="text" name="clientLastname" required>
+            </div>
+
+            <div class="form-group">
+                <label>DNI</label>
+                <input type="text" name="dni" required>
+            </div>
+
+            <div class="form-group">
+                <label>Número telefónico</label>
+                <input type="tel" name="phone" required>
+            </div>
+        </section>
+
+
+        <section class="form-section">
+            <h2>Servicio Médico</h2>
+            <div class="form-group">
+                <label>Especialidad</label>
+                <select name="specialty" required>
+                    <option value="">Seleccione una especialidad</option>
+                    <option value="Medicina General">Medicina General</option>
+                    <option value="Dermatología">Dermatología</option>
+                    <option value="Oftalmología">Oftalmología</option>
+                    <option value="Cardiología">Cardiología</option>
+                    <option value="Ortopedia">Ortopedia</option>
+                    <option value="Cirugía">Cirugía</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Descripción de la consulta</label>
+                <textarea name="description" rows="3" placeholder="Motivo de la cita..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Fecha</label>
+                <input type="date" name="date" required>
+            </div>
+
+            <div class="form-group">
+                <label>Estado</label>
+                <select name="status" required>
+                    <option value="No Pagado">No Pagado</option>
+                    <option value="Pagado">Pagado</option>
+                </select>
+            </div>
+        </section>
+
+
+        <div class="form-actions">
+            <button type="submit" class="btn primary">Registrar Cita</button>
+        </div>
+    </form>
+</main>
+
+
+<footer>
+    <div class="footer-content">
+        <p>© 2025 PawCare Veterinaria. Todos los derechos reservados.</p>
+    </div>
+</footer>
+
+</body>
+</html>
