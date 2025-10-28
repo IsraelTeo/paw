@@ -1,5 +1,6 @@
 package com.veterinary.paw.domain;
 
+import com.veterinary.paw.enums.AppointmentStatusEnum;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,30 +13,75 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @ToString
 @Builder
-@Table(name = "cita_medica")
-public class MedicalAppointment {
+@EqualsAndHashCode
+@NamedStoredProcedureQueries({
+        @NamedStoredProcedureQuery(
+                name = "VeterinaryAppointment.saveVeterinaryAppointment",
+                procedureName = "insert_veterinary_appointment",
+                resultClasses = VeterinaryAppointment.class,
+                parameters = {
+                        @StoredProcedureParameter(
+                                mode = ParameterMode.IN,
+                                name = "p_status",
+                                type = String.class
+                        ),
+                        @StoredProcedureParameter(
+                                mode = ParameterMode.IN,
+                                name = "p_observations",
+                                type = String.class
+                        ),
+                        @StoredProcedureParameter(
+                                mode = ParameterMode.IN,
+                                name = "p_register_date",
+                                type = LocalDate.class
+                        ),
+                        @StoredProcedureParameter(
+                                mode = ParameterMode.IN,
+                                name = "p_id_pet", type = Long.class
+                        ),
+                        @StoredProcedureParameter(
+                                mode = ParameterMode.IN,
+                                name = "p_id_veterinary",
+                                type = Long.class
+                        ),
+                        @StoredProcedureParameter(
+                                mode = ParameterMode.IN,
+                                name = "p_id_veterinary_service",
+                                type = Long.class
+                        ),
+                        @StoredProcedureParameter(
+                                mode = ParameterMode.IN,
+                                name = "p_id_shift",
+                                type = Long.class
+                        )
+                }
+        )
+})
+@Table(name = "veterinary_appointment")
+public class VeterinaryAppointment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "fecha_registro", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private LocalDate registrationDate;
-
-    @Column(name = "estado", length = 50)
-    private String status = "PENDIENTE";
-
-    @Column(name = "observaciones")
+    @Column(name = "observations")
     private String observations;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 50, nullable = false)
+    private AppointmentStatusEnum status = AppointmentStatusEnum.PENDIENTE;
+
+    @Column(name = "register_date")
+    private LocalDate registerDate;
 
     @ManyToOne(
             targetEntity = Pet.class,
             fetch = FetchType.LAZY
     )
     @JoinColumn(
-            name = "id_mascota",
+            name = "id_pet",
             nullable = false,
-            foreignKey = @ForeignKey(name = "fk_mascota_cita")
+            foreignKey = @ForeignKey(name = "fk_pet_appointment")
     )
     private Pet pet;
 
@@ -44,31 +90,38 @@ public class MedicalAppointment {
             fetch = FetchType.LAZY
     )
     @JoinColumn(
-            name = "id_medico",
+            name = "id_veterinary",
             nullable = false,
-            foreignKey = @ForeignKey(name = "fk_medico_cita")
+            foreignKey = @ForeignKey(name = "fk_veterinary_appointment")
     )
-    private Veterinary doctor;
+    private Veterinary veterinary;
 
     @ManyToOne(
             targetEntity = VeterinaryService.class,
             fetch = FetchType.LAZY
     )
     @JoinColumn(
-            name = "id_servicio",
+            name = "id_veterinary_service",
             nullable = false,
-            foreignKey = @ForeignKey(name = "fk_servicio_cita")
+            foreignKey = @ForeignKey(name = "fk_veterinary_service_appointment")
     )
-    private VeterinaryService service;
+    private VeterinaryService veterinaryService;
 
     @ManyToOne(
             targetEntity = Shift.class,
             fetch = FetchType.LAZY
     )
     @JoinColumn(
-            name = "id_turno",
+            name = "id_shift",
             nullable = false,
-            foreignKey = @ForeignKey(name = "fk_turno_cita")
+            foreignKey = @ForeignKey(name = "fk_shift_appointment")
     )
     private Shift shift;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.registerDate == null) {
+            this.registerDate = LocalDate.now();
+        }
+    }
 }

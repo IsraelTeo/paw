@@ -1,39 +1,46 @@
 package com.veterinary.paw.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.veterinary.paw.enums.AppointmentStatusEnum;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Builder;
 
 @Builder
-public record VeterinaryServiceRequestDTO (
-        @NotNull(message = "El estado no puede ser nulo")
+public record VeterinaryAppointmentCreateRequestDTO(
+
+        @NotNull(message = "Status cannot be null")
         AppointmentStatusEnum status,
 
-        @Size(max = 255, message = "Las observaciones no pueden tener más de 255 caracteres")
+        @Size(max = 255, message = "Observations cannot exceed 255 characters")
         String observations,
 
-        @NotNull(message = "Debe proporcionar el ID de la mascota")
-        @Positive(message = "El ID de la mascota debe ser un número positivo")
+        @JsonProperty("id_pet")
+        @NotNull(message = "Pet ID must be provided")
+        @Positive(message = "Pet ID must be a positive number")
+        @Min(1)
         Long idPet,
 
-        @NotNull(message = "Debe proporcionar el ID del veterinario")
-        @Positive(message = "El ID del veterinario debe ser un número positivo")
+        @JsonProperty("id_veterinary")
+        @NotNull(message = "Veterinary ID must be provided")
+        @Positive(message = "Veterinary ID must be a positive number")
+        @Min(1)
         Long idVeterinary,
 
-        @NotNull(message = "Debe proporcionar el ID del servicio veterinario")
-        @Positive(message = "El ID del servicio veterinario debe ser un número positivo")
+        @JsonProperty("id_veterinary_service")
+        @NotNull(message = "Veterinary service ID must be provided")
+        @Positive(message = "Veterinary service ID must be a positive number")
+        @Min(1)
         Long idVeterinaryService,
 
-        @NotNull(message = "Debe proporcionar el ID del turno")
-        @Positive(message = "El ID del turno debe ser un número positivo")
+        @JsonProperty("id_shift")
+        @NotNull(message = "Shift ID must be provided")
+        @Positive(message = "Shift ID must be a positive number")
+        @Min(1)
         Long idShift
 ){
-    public VeterinaryAppointmentRequestDTO {
+    public VeterinaryAppointmentCreateRequestDTO {
         if (status == null) {
             status = AppointmentStatusEnum.PENDIENTE;
         }
     }
-    
 }

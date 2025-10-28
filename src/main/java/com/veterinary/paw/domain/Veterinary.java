@@ -1,5 +1,6 @@
 package com.veterinary.paw.domain;
 
+import com.veterinary.paw.enums.DayAvailableEnum;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,28 +12,29 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
+@ToString(exclude = {"appointments", "shifts"})
 @Builder
-@Table(name = "medico")
-public class Doctor {
+@EqualsAndHashCode(exclude = {"appointments", "shifts"})
+@Table(name = "veterinary")
+public class Veterinary {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "nombre", length = 100, nullable = false)
+    @Column(name = "first_name", length = 100, nullable = false)
     private String firstName;
 
-    @Column(name = "apellido", length = 100, nullable = false)
+    @Column(name = "last_name", length = 100, nullable = false)
     private String lastName;
 
-    @Column(name = "fecha_nacimiento", nullable = false)
+    @Column(name = "birth_date", nullable = false)
     private LocalDate birthDate;
 
-    @Column(name = "especialidad", length = 100, nullable = false)
-    private String specialty;
+    @Column(name = "speciality", length = 100, nullable = false)
+    private String speciality;
 
-    @Column(name = "numero_telefono", length = 20, nullable = false, unique = true)
+    @Column(name = "phone_number", length = 20, nullable = false, unique = true)
     private String phoneNumber;
 
     @Column(name = "email", length = 100, nullable = false, unique = true)
@@ -41,10 +43,29 @@ public class Doctor {
     @Column(name = "dni", length = 20, nullable = false, unique = true)
     private String dni;
 
+    @Enumerated(EnumType.STRING)
+    @ElementCollection(targetClass = DayAvailableEnum.class)
+    @CollectionTable(
+            name = "veterinary_available_days",
+            joinColumns = @JoinColumn(name = "veterinary_id")
+    )
+    @Column(name = "day_of_week")
+    private List<DayAvailableEnum> availableDays;
+
     @OneToMany(
-            mappedBy = "doctor",
+            mappedBy = "veterinary",
             cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY,
             orphanRemoval = true
     )
-    private List<MedicalAppointment> appointments;
+    private List<Shift> shifts;
+
+    @OneToMany(
+            mappedBy = "veterinary",
+            cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY,
+            orphanRemoval = true
+    )
+    private List<VeterinaryAppointment> appointments;
+
 }
