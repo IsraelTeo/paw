@@ -92,51 +92,34 @@ CREATE TABLE veterinary_appointment(
 ------------------------------------------------------------------------------------------------------------------------
 -- VETERINARIO
 -- INSERTAR UN VETERINARIO
-CREATE OR REPLACE FUNCTION insert_veterinary(
+CREATE OR REPLACE PROCEDURE insert_veterinary(
     p_first_name VARCHAR,
     p_last_name VARCHAR,
     p_birth_date DATE,
     p_speciality VARCHAR,
     p_phone_number VARCHAR,
     p_email VARCHAR,
-    p_dni VARCHAR
+    p_dni VARCHAR,
+    p_available_days VARCHAR -- días separados por coma, ejemplo: 'MONDAY,WEDNESDAY'
 )
-RETURNS TABLE (
-    id INT,
-    first_name VARCHAR,
-    last_name VARCHAR,
-    birth_date DATE,
-    speciality VARCHAR,
-    phone_number VARCHAR,
-    email VARCHAR,
-    dni VARCHAR
-) AS $$
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    vet_id BIGINT;
+    day TEXT;
 BEGIN
-    RETURN QUERY
-    INSERT INTO veterinary (first_name,
-                            last_name,
-                            birth_date,
-                            speciality,
-                            phone_number,
-                            email,
-                            dni)
-    VALUES (p_first_name,
-            p_last_name,
-            p_birth_date,
-            p_speciality,
-            p_phone_number,
-            p_email,
-            p_dni)
-    RETURNING id,
-            first_name,
-            last_name,
-            birth_date,
-            speciality,
-            phone_number,
-            email,
-            dni;
+    -- Insertar el veterinario
+    INSERT INTO veterinary(first_name, last_name, birth_date, speciality, phone_number, email, dni)
+    VALUES (p_first_name, p_last_name, p_birth_date, p_speciality, p_phone_number, p_email, p_dni)
+    RETURNING id INTO vet_id;
+
+    -- Insertar los días disponibles
+    FOREACH day IN ARRAY string_to_array(p_available_days, ',') LOOP
+        INSERT INTO veterinary_available_days(veterinary_id, day_of_week)
+        VALUES (vet_id, day);
+    END LOOP;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 -- ELIMINAR UN VETERINARIO
 CREATE OR REPLACE FUNCTION delete_veterinary(p_id INT)
