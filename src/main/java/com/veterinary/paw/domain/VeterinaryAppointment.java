@@ -74,15 +74,11 @@ public class VeterinaryAppointment {
     @Column(name = "register_date")
     private LocalDate registerDate;
 
-    @ManyToOne(
-            targetEntity = Pet.class,
-            fetch = FetchType.LAZY
-    )
-    @JoinColumn(
-            name = "id_pet",
+    @ManyToOne(targetEntity = Pet.class,
+            fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_pet",
             nullable = false,
-            foreignKey = @ForeignKey(name = "fk_pet_appointment")
-    )
+            foreignKey = @ForeignKey(name = "fk_pet_appointment"))
     private Pet pet;
 
     @ManyToOne(

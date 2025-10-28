@@ -34,22 +34,13 @@ public class Shift {
     @Column(name = "available", nullable = false)
     private Boolean available = true;
 
-    @ManyToOne(
-            targetEntity = Veterinary.class,
-            fetch = FetchType.LAZY
-    )
-    @JoinColumn(
-            name = "id_veterinary",
-            nullable = false,
-            foreignKey = @ForeignKey(name = "fk_veterinary_shift")
-    )
+    @ManyToOne(targetEntity = Veterinary.class, fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_veterinary", nullable = false,
+            foreignKey = @ForeignKey(name = "fk_veterinary_shift"))
     private Veterinary veterinary;
 
-    @OneToMany(
-            mappedBy = "shift",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
+
+    @OneToMany(mappedBy = "shift", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<VeterinaryAppointment> appointments;
 
 }
