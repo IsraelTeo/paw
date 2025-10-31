@@ -14,8 +14,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -48,10 +50,10 @@ public class VeterinaryAppointmentService {
         validateVeterinaryDay(veterinary, shift);
         validateShiftTime(veterinary, shift);
         validateShiftOwnership(veterinary, shift);
-        validateShiftNotBooked(veterinary, shift);
+       // validateShiftNotBooked(veterinary, shift);
 
         // 3️⃣ Guardar cita
-        VeterinaryAppointment appointment = saveAppointment(request, pet, veterinary, service, shift);
+        VeterinaryAppointment appointment = saveVeterinaryAppointment(request, pet, veterinary, service, shift);
 
         // 4️⃣ Marcar turno como no disponible
         shift.setAvailable(false);
@@ -143,27 +145,41 @@ public class VeterinaryAppointmentService {
     }
 
     private void validateShiftNotBooked(Veterinary veterinary, Shift shift) {
-        if (veterinaryAppointmentRepository.existsByVeterinaryAndShift(veterinary.getId(), shift.getId())) {
+        if (veterinaryAppointmentRepository.existsByVeterinaryIdAndShiftId(veterinary.getId(), shift.getId())) {
             LOGGER.error("❌ El turno ya está reservado. Veterinario ID: {}, Turno ID: {}", veterinary.getId(), shift.getId());
             throw new PawException(ApiErrorEnum.SHIFT_ALREADY_BOOKED);
         }
     }
 
-    private VeterinaryAppointment saveAppointment(VeterinaryAppointmentCreateRequestDTO request,
-                                                  Pet pet,
-                                                  Veterinary veterinary,
-                                                  VeterinaryService service,
-                                                  Shift shift) {
-        return veterinaryAppointmentRepository.saveVeterinaryAppointment(
-                request.status().name(),
-                request.observations(),
-                shift.getDate(),
-                pet.getId(),
-                veterinary.getId(),
-                service.getId(),
-                shift.getId()
-        );
-    }
+
+    private VeterinaryAppointment saveVeterinaryAppointment(
+        VeterinaryAppointmentCreateRequestDTO request,
+        Pet pet,
+        Veterinary veterinary,
+        VeterinaryService service,
+        Shift shift
+) {
+    java.sql.Timestamp sqlTimestamp = java.sql.Timestamp.valueOf(LocalDateTime.now());
+
+    // Llamamos a la función de PostgreSQL que devuelve el ID de la cita creada
+    Long newId = veterinaryAppointmentRepository.saveVeterinaryAppointment(
+            request.status().toString(),
+            request.observations(),
+            sqlTimestamp,
+            pet.getId(),
+            veterinary.getId(),
+            service.getId(),
+            shift.getId()
+    );
+
+    // Buscamos la cita recién creada por su ID para devolverla completa
+    return veterinaryAppointmentRepository.findById(newId)
+            .orElseThrow(() -> {
+                LOGGER.error("❌ Error al recuperar la cita recién creada. ID: {}", newId);
+                return new PawException(ApiErrorEnum.APPOINTMENT_CREATION_FAILED);
+            });
+}
+
 
     // ======================
     // MAPEO DE DÍAS

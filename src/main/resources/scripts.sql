@@ -740,52 +740,41 @@ END;
 $$ LANGUAGE plpgsql;
 
 ------------------------------------------------------------------------------------------------------------------------
+-- =========================================
 -- CITA VETERINARIO
+-- =========================================
 -- INSERTAR UNA CITA
 CREATE OR REPLACE FUNCTION insert_veterinary_appointment(
-    p_state VARCHAR,
-    p_observations TEXT,
-    p_id_pet INT,
-    p_id_veterinary INT,
-    p_id_veterinary_service INT,
-    p_id_shift INT
+    p_status VARCHAR,
+    p_observations VARCHAR,
+    p_register_date TIMESTAMP,
+    p_id_pet BIGINT,
+    p_id_veterinary BIGINT,
+    p_id_veterinary_service BIGINT,
+    p_id_shift BIGINT
 )
-RETURNS TABLE(
-    id INT,
-    state VARCHAR,
-    observations TEXT,
-    register_date DATE,
-    id_pet INT,
-    id_veterinary INT,
-    id_veterinary_service INT,
-    id_shift INT,
-) AS $$
+RETURNS BIGINT AS $$
+DECLARE
+    new_id BIGINT;
 BEGIN
-    INSERT INTO veterinary_appointment (
-        state,
-        observations,
-        id_pet, id_veterinary,
-        id_veterinary_service,
-        id_shift
-    )
-    VALUES (
-            p_state,
-            p_observations,
-            p_id_pet,
-            p_id_veterinary,
-            p_id_veterinary_service,
-            p_id_shift
-    );
+    INSERT INTO veterinary_appointment(status, observations, register_date, id_pet, id_veterinary, id_veterinary_service, id_shift)
+    VALUES (p_status, p_observations, p_register_date, p_id_pet, p_id_veterinary, p_id_veterinary_service, p_id_shift)
+    RETURNING id_veterinary_appointment INTO new_id;
+
+    RETURN new_id;
 END;
 $$ LANGUAGE plpgsql;
 
+
+
 -- ELIMINAR UNA CITA
-CREATE OR REPLACE FUNCTION delete_veterinary_appointment(p_id INT)
-RETURNS VOID AS $$
+CREATE OR REPLACE PROCEDURE delete_veterinary_appointment(p_id INT)
+LANGUAGE plpgsql
+AS $$
 BEGIN
     DELETE FROM veterinary_appointment WHERE id = p_id;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 -- OBTENER CITA POR ID
 CREATE OR REPLACE FUNCTION get_veterinary_appointment_by_id(p_id INT)
@@ -801,18 +790,18 @@ RETURNS TABLE(
 ) AS $$
 BEGIN
     RETURN QUERY
-        SELECT
-                id,
-                register_date,
-                observations,
-                id_pet,
-                id_veterinary,
-                id_veterinary_service,
-                id_shift,
-                state
-        FROM veterinary_appointment
-        WHERE id = p_id
-        LIMIT 1;
+    SELECT
+        id,
+        register_date,
+        observations,
+        id_pet,
+        id_veterinary,
+        id_veterinary_service,
+        id_shift,
+        state
+    FROM veterinary_appointment
+    WHERE id = p_id
+    LIMIT 1;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -831,10 +820,14 @@ RETURNS TABLE(
 BEGIN
     RETURN QUERY
     SELECT
-            id,
-            register_date,
-            observations,
-            state
+        id,
+        register_date,
+        observations,
+        id_pet,
+        id_veterinary,
+        id_veterinary_service,
+        id_shift,
+        state
     FROM veterinary_appointment
     ORDER BY register_date DESC
     LIMIT p_limit OFFSET p_offset;
@@ -842,7 +835,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- ACTUALIZAR UNA CITA
-CREATE OR REPLACE FUNCTION update_veterinary_appointment(
+CREATE OR REPLACE PROCEDURE update_veterinary_appointment(
     p_id INT,
     p_state VARCHAR,
     p_observations TEXT,
@@ -851,35 +844,17 @@ CREATE OR REPLACE FUNCTION update_veterinary_appointment(
     p_id_veterinary_service INT,
     p_id_shift INT
 )
-RETURNS TABLE(
-    id INT,
-    register_date TIMESTAMP,
-    observations TEXT,
-    register_date DATE,
-    id_pet INT,
-    id_veterinary INT,
-    id_veterinary_service INT,
-    id_shift INT,
-    state VARCHAR
-) AS $$
+LANGUAGE plpgsql
+AS $$
 BEGIN
-    RETURN QUERY
     UPDATE veterinary_appointment
-    SET observations = p_observations,
+    SET
+        observations = p_observations,
         id_pet = p_id_pet,
         id_veterinary = p_id_veterinary,
         id_veterinary_service = p_id_veterinary_service,
         id_shift = p_id_shift,
         state = p_state
-    WHERE id = p_id
-    RETURNING
-                id,
-                state,
-                observations,
-                register_date,
-                id_pet,
-                id_veterinary,
-                id_veterinary_service,
-                id_shift;
+    WHERE id = p_id;
 END;
-$$ LANGUAGE plpgsql;
+$$;
