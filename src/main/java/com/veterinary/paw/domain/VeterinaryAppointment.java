@@ -20,40 +20,13 @@ import java.time.LocalDate;
                 procedureName = "insert_veterinary_appointment",
                 resultClasses = VeterinaryAppointment.class,
                 parameters = {
-                        @StoredProcedureParameter(
-                                mode = ParameterMode.IN,
-                                name = "p_status",
-                                type = String.class
-                        ),
-                        @StoredProcedureParameter(
-                                mode = ParameterMode.IN,
-                                name = "p_observations",
-                                type = String.class
-                        ),
-                        @StoredProcedureParameter(
-                                mode = ParameterMode.IN,
-                                name = "p_register_date",
-                                type = LocalDate.class
-                        ),
-                        @StoredProcedureParameter(
-                                mode = ParameterMode.IN,
-                                name = "p_id_pet", type = Long.class
-                        ),
-                        @StoredProcedureParameter(
-                                mode = ParameterMode.IN,
-                                name = "p_id_veterinary",
-                                type = Long.class
-                        ),
-                        @StoredProcedureParameter(
-                                mode = ParameterMode.IN,
-                                name = "p_id_veterinary_service",
-                                type = Long.class
-                        ),
-                        @StoredProcedureParameter(
-                                mode = ParameterMode.IN,
-                                name = "p_id_shift",
-                                type = Long.class
-                        )
+                        @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_status", type = String.class),
+                        @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_observations", type = String.class),
+                        @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_register_date", type = LocalDate.class),
+                        @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_id_pet", type = Long.class),
+                        @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_id_veterinary", type = Long.class),
+                        @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_id_veterinary_service", type = Long.class),
+                        @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_id_shift", type = Long.class)
                 }
         )
 })

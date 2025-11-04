@@ -23,10 +23,13 @@ public enum ApiErrorEnum {
 
     SHIFT_OUT_OF_WORKING_HOURS(HttpStatus.BAD_REQUEST, "The shift is outside the veterinary's working hours."),
 
+    VETERINARY_SHIFT_CONFLICT(HttpStatus.BAD_REQUEST, "There is already a reservation for that time slot."),
+
     SHIFT_ALREADY_BOOKED(HttpStatus.BAD_REQUEST, "The shift is already booked for this veterinary."),
 
     SHIFT_DOES_NOT_BELONG_TO_VETERINARY(HttpStatus.BAD_REQUEST, "The shift does not belong to the veterinary assigned."),
 
+    APPOINTMENT_CREATION_FAILED(HttpStatus.BAD_REQUEST, "An error has occurred while creating the appointment" );
     ;
 
     private HttpStatus status;

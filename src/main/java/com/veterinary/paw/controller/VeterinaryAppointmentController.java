@@ -22,7 +22,9 @@ public class VeterinaryAppointmentController {
     private final VeterinaryAppointmentService veterinaryAppointmentService;
 
     @PostMapping
-    public ResponseEntity<VeterinaryAppointmentCreateResponseDTO> registerVeterinaryAppointment(@RequestBody @Valid VeterinaryAppointmentCreateRequestDTO request){
+    public ResponseEntity<VeterinaryAppointmentCreateResponseDTO> registerVeterinaryAppointment(
+            @RequestBody @Valid VeterinaryAppointmentCreateRequestDTO request
+    ){
         VeterinaryAppointmentCreateResponseDTO response = veterinaryAppointmentService.registerVeterinaryAppointment(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
