@@ -11,6 +11,8 @@ public enum ApiErrorEnum {
 
     VETERINARY_NOT_FOUND(HttpStatus.NOT_FOUND, "The veterinary was not found."),
 
+    VETERINARY_APPOINTMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "The appointment was not found."),
+
     VETERINARY_SERVICE_NOT_FOUND(HttpStatus.NOT_FOUND, "The veterinary service was not found."),
 
     SHIFT_NOT_FOUND(HttpStatus.NOT_FOUND, "The shift was not found."),

@@ -3,6 +3,7 @@ package com.veterinary.paw.service;
 import com.veterinary.paw.domain.*;
 import com.veterinary.paw.dto.VeterinaryAppointmentCreateRequestDTO;
 import com.veterinary.paw.dto.VeterinaryAppointmentCreateResponseDTO;
+import com.veterinary.paw.dto.VeterinaryAppointmentResponseDTO;
 import com.veterinary.paw.enums.ApiErrorEnum;
 import com.veterinary.paw.exception.PawException;
 import com.veterinary.paw.mapper.VeterinaryAppointmentMapper;
@@ -34,8 +35,27 @@ public class VeterinaryAppointmentService {
 
     private final VeterinaryAppointmentMapper veterinaryAppointmentMapper;
 
+    @Transactional(readOnly = true)
+    public List<VeterinaryAppointmentResponseDTO> get(){
+        List<VeterinaryAppointment> appointments = veterinaryAppointmentRepository.findAll();
+        return appointments.stream()
+                .map(veterinaryAppointmentMapper::toResponseDTO)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public VeterinaryAppointmentResponseDTO getById(Long id){
+        VeterinaryAppointment appointment = veterinaryAppointmentRepository.findById(id)
+                .orElseThrow(()-> {
+                    LOGGER.error("Cita no encontrada. ID: {}", id);
+                    return new PawException(ApiErrorEnum.VETERINARY_APPOINTMENT_NOT_FOUND);
+                    });
+
+        return veterinaryAppointmentMapper.toResponseDTO(appointment);
+    }
+
     @Transactional
-    public VeterinaryAppointmentCreateResponseDTO registerVeterinaryAppointment(VeterinaryAppointmentCreateRequestDTO request) {
+    public VeterinaryAppointmentCreateResponseDTO register(VeterinaryAppointmentCreateRequestDTO request) {
         Pet pet = findPet(request.idPet());
         Veterinary veterinary = findVeterinary(request.idVeterinary());
         VeterinaryService service = findVeterinaryService(request.idVeterinaryService());
@@ -62,7 +82,77 @@ public class VeterinaryAppointmentService {
         LOGGER.info("Cita registrada correctamente. ID cita: {}, Mascota: {}, Veterinario: {}, Fecha: {}",
                 appointment.getId(), pet.getId(), veterinary.getId(), shift.getDate());
 
-        return veterinaryAppointmentMapper.toResponseDTO(appointment);
+        return veterinaryAppointmentMapper.toCreateResponseDTO(appointment);
+    }
+
+    @Transactional
+    public VeterinaryAppointmentCreateResponseDTO update(Long id, VeterinaryAppointmentCreateRequestDTO request) {
+        VeterinaryAppointment existingAppointment = veterinaryAppointmentRepository.findById(id)
+                .orElseThrow(()->{
+                    LOGGER.error("Cita veterinaria no encontrada para actualizar. ID: {}", id);
+                    return new PawException(ApiErrorEnum.VETERINARY_APPOINTMENT_NOT_FOUND);
+                });
+
+        Pet pet = findPet(request.idPet());
+        Veterinary veterinary = findVeterinary(request.idVeterinary());
+        VeterinaryService service = findVeterinaryService(request.idVeterinaryService());
+        Shift newShift = findShift(request.idShift());
+
+        // La fecha del turno de la cita debe ser en tiempo futuro
+        validateAppointmentDateIsFuture(newShift.getDate());
+
+        // La fecha del turno de la cita debe ser en una fecha que el médico trabaja
+        List<Shift> veterinaryShifts = getShiftsForVeterinarianOnDate(veterinary.getId(), newShift.getDate());
+
+        // El horario inicial y final del turno de la cita estar en el horario inicial y final que el médico trabaja
+        Shift coincidentShift = validateShiftTimes(newShift, veterinaryShifts);
+
+        // El horario inicial y final del turno no debe tener conflicto de horario con otro turno de cita reservado de ese médico
+        List<Shift> reservedShifts = shiftRepository.findReservedShiftsByVeterinaryIdAndDate(veterinary.getId(), newShift.getDate());
+        validateShiftConflicts(coincidentShift , reservedShifts);
+
+        // Liberar turno anterior si se cambió
+        Shift previousShift = existingAppointment.getShift();
+        if (!previousShift.getId().equals(newShift.getId())) {
+            previousShift.setAvailable(true);
+            shiftRepository.save(previousShift);
+        }
+
+        existingAppointment.setStatus(request.status());
+        existingAppointment.setObservations(request.observations());
+        existingAppointment.setRegisterDate(LocalDate.now());
+        existingAppointment.setPet(pet);
+        existingAppointment.setVeterinary(veterinary);
+        existingAppointment.setVeterinaryService(service);
+        existingAppointment.setShift(newShift);
+
+        // Marcar el nuevo turno como no disponible
+        newShift.setAvailable(false);
+        shiftRepository.save(newShift);
+
+        VeterinaryAppointment updatedAppointment = veterinaryAppointmentRepository.save(existingAppointment);
+
+        LOGGER.info("Cita actualizada correctamente. ID cita: {}, Mascota: {}, Veterinario: {}, Fecha: {}",
+                updatedAppointment.getId(), pet.getId(), veterinary.getId(), newShift.getDate());
+
+
+        return veterinaryAppointmentMapper.toCreateResponseDTO(updatedAppointment);
+    }
+
+    @Transactional
+    public void delete(Long id){
+        VeterinaryAppointment existingAppointment = veterinaryAppointmentRepository.findById(id)
+                .orElseThrow(() -> {
+                    LOGGER.error("Cita veterinaria no encontrada para eliminar. ID: {}", id);
+                    return new PawException(ApiErrorEnum.VETERINARY_APPOINTMENT_NOT_FOUND);
+                });
+
+        if (existingAppointment.getShift()!= null) {
+            existingAppointment.getShift().setAvailable(true);
+            shiftRepository.save(existingAppointment.getShift());
+        }
+
+        veterinaryAppointmentRepository.delete(existingAppointment);
     }
 
     private Pet findPet(Long id) {

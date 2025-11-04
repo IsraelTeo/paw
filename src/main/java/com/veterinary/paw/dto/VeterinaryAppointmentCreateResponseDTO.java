@@ -23,7 +23,7 @@ public record VeterinaryAppointmentCreateResponseDTO (
         @JsonProperty("id_veterinary")
         Long idVeterinary,
 
-        @JsonProperty("id_service")
+        @JsonProperty("id_veterinary_service")
         Long idVeterinaryService,
 
         @JsonProperty("id_shift")

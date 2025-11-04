@@ -3,12 +3,23 @@ package com.veterinary.paw.mapper;
 import com.veterinary.paw.domain.*;
 import com.veterinary.paw.dto.VeterinaryAppointmentCreateRequestDTO;
 import com.veterinary.paw.dto.VeterinaryAppointmentCreateResponseDTO;
+import com.veterinary.paw.dto.VeterinaryAppointmentResponseDTO;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class VeterinaryAppointmentMapper {
 
-    public VeterinaryAppointmentCreateResponseDTO toResponseDTO(VeterinaryAppointment appointment) {
+    private final PetMapper petMapper;
+
+    private final VeterinaryMapper veterinaryMapper;
+
+    private final VeterinaryServiceMapper veterinaryServiceMapper;
+
+    private ShiftMapper shiftMapper;
+
+    public VeterinaryAppointmentCreateResponseDTO toCreateResponseDTO(VeterinaryAppointment appointment) {
         return VeterinaryAppointmentCreateResponseDTO.builder()
                 .id(appointment.getId())
                 .registerDate(appointment.getRegisterDate())
@@ -38,5 +49,16 @@ public class VeterinaryAppointmentMapper {
                 .build();
     }
 
-
+    public VeterinaryAppointmentResponseDTO toResponseDTO(VeterinaryAppointment appointment) {
+        return VeterinaryAppointmentResponseDTO.builder()
+                .id(appointment.getId())
+                .registerDate(appointment.getRegisterDate())
+                .status(appointment.getStatus())
+                .observations(appointment.getObservations())
+                .petResponseDTO(petMapper.toResponseDTO(appointment.getPet()))
+                .veterinaryResponseDTO(veterinaryMapper.toResponseDTO(appointment.getVeterinary()))
+                .veterinaryServiceResponseDTO(veterinaryServiceMapper.toResponseDTO(appointment.getVeterinaryService()))
+                .shiftResponseDTO(shiftMapper.toResponseDTO(appointment.getShift()))
+                .build();
+    }
 }

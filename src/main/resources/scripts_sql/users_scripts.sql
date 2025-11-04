@@ -3,9 +3,13 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
   email VARCHAR(255) NOT NULL UNIQUE,
-  password TEXT NOT NULL, -- almacenaremos el hash con crypt()
+  dni VARCHAR(8) NOT NULL,
+  phone_number VARCHAR(9) NOT NULL,
+  password TEXT NOT NULL,
 
   CONSTRAINT unique_email_user UNIQUE (email),
+  CONSTRAINT unique_dni_user UNIQUE (dni),
+  CONSTRAINT unique_phone_number_user UNIQUE (phone_number)
 );
 
 -- PROCEDIMIENTOS ALMACENADOS USUARIOS
@@ -31,8 +35,7 @@ BEGIN
 END;
 $$;
 
--- 4. (Opcional) función para obtener id/ email si ya autenticó:
---    devuelve id del usuario o NULL si no existe
+
 CREATE OR REPLACE FUNCTION get_user_id_by_email(p_email TEXT)
 RETURNS TABLE (
   id BIGINT,
@@ -44,9 +47,26 @@ RETURNS TABLE (
   LIMIT 1;
 $$;
 
- insertar usuario de prueba (password 'secret123')
-INSERT INTO users (email, password)
-VALUES (
-  'test@example.com',
-  crypt('secret123', gen_salt('bf'))
-);
+--insertar usuario de prueba (password 'secret123')
+CREATE OR REPLACE PROCEDURE save_user(
+    p_email VARCHAR,
+    p_dni VARCHAR,
+    p_phone_number VARCHAR,
+    p_password VARCHAR
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    INSERT INTO users (email, dni, phone_number, password)
+    VALUES (
+        p_email,
+        p_dni,
+        p_phone_number,
+        crypt(p_password, gen_salt('bf'))
+    );
+
+    RAISE NOTICE 'Usuario registrado correctamente: %', p_email;
+END;
+$$;
+
+
