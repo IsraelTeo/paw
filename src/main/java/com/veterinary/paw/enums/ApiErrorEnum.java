@@ -12,7 +12,9 @@ public enum ApiErrorEnum {
     VETERINARY_SERVICE_NOT_FOUND(HttpStatus.NOT_FOUND, "El servicio veterinario no fue encontrado."),
     SHIFT_NOT_FOUND(HttpStatus.NOT_FOUND, "El turno no fue encontrado."),
     CUSTOMER_NOT_FOUND(HttpStatus.NOT_FOUND, "El cliente no fue encontrado."),
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "El usuario no fue encontrado"),
 
+    USER_EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "El email proporcionado ya se encuentra registrado."),
 
     SHIFT_NOT_AVAILABLE(HttpStatus.BAD_REQUEST, "El turno no está disponible."),
     INVALID_SHIFT_DATE(HttpStatus.BAD_REQUEST, "La fecha del turno debe ser en el futuro."),
