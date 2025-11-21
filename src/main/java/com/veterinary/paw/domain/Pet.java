@@ -48,6 +48,5 @@ public class Pet {
             foreignKey = @ForeignKey(name = "fk_customer_pet")
     )
     private Customer owner;
-
 }
 
