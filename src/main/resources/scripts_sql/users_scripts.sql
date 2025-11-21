@@ -35,18 +35,6 @@ BEGIN
 END;
 $$;
 
-
-CREATE OR REPLACE FUNCTION get_user_id_by_email(p_email TEXT)
-RETURNS TABLE (
-  id BIGINT,
-  email TEXT
-) LANGUAGE sql AS $$
-  SELECT id, email
-  FROM users
-  WHERE email = p_email
-  LIMIT 1;
-$$;
-
 --insertar usuario de prueba (password 'secret123')
 CREATE OR REPLACE PROCEDURE save_user(
     p_email VARCHAR,
@@ -68,5 +56,17 @@ BEGIN
     RAISE NOTICE 'Usuario registrado correctamente: %', p_email;
 END;
 $$;
+
+CREATE OR REPLACE FUNCTION get_user_id_by_email(p_email TEXT)
+RETURNS TABLE (
+  id BIGINT,
+  email TEXT
+) LANGUAGE sql AS $$
+  SELECT id, email
+  FROM users
+  WHERE email = p_email
+  LIMIT 1;
+$$;
+
 
 

@@ -18,10 +18,10 @@ import java.time.LocalDate;
         @NamedStoredProcedureQuery(
                 name = "VeterinaryAppointment.saveVeterinaryAppointment",
                 procedureName = "insert_veterinary_appointment",
-                resultClasses = VeterinaryAppointment.class,
+                //resultClasses = VeterinaryAppointment.class,
                 parameters = {
-                        @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_status", type = String.class),
                         @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_observations", type = String.class),
+                        @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_status", type = String.class),
                         @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_register_date", type = LocalDate.class),
                         @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_id_pet", type = Long.class),
                         @StoredProcedureParameter(mode = ParameterMode.IN, name = "p_id_veterinary", type = Long.class),
@@ -90,11 +90,4 @@ public class VeterinaryAppointment {
             foreignKey = @ForeignKey(name = "fk_shift_appointment")
     )
     private Shift shift;
-
-    @PrePersist
-    public void prePersist() {
-        if (this.registerDate == null) {
-            this.registerDate = LocalDate.now();
-        }
-    }
 }

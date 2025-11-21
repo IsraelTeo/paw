@@ -16,57 +16,40 @@ CREATE TABLE veterinary_appointment(
 );
 
 -- PROCEDIMIENTOS ALMACENADOS CITA VETERINARIO
--- INSERTAR UNA CITA
-CREATE OR REPLACE FUNCTION insert_veterinary_appointment(
-    p_observations TEXT,
-    p_status VARCHAR,
-    p_register_date,
-    p_id_pet INT,
-    p_id_veterinary INT,
-    p_id_veterinary_service INT,
-    p_id_shift INT
+
+-- PROCEDIMIENTO INSERTAR UNA CITA
+CREATE OR REPLACE PROCEDURE insert_veterinary_appointment(
+    IN p_observations TEXT,
+    IN p_status VARCHAR,
+    IN p_register_date DATE,
+    IN p_id_pet INT,
+    IN p_id_veterinary INT,
+    IN p_id_veterinary_service INT,
+    IN p_id_shift INT
 )
-RETURNS TABLE(
-    id INT,
-    observations TEXT,
-    status VARCHAR,
-    register_date DATE,
-    id_pet INT,
-    id_veterinary INT,
-    id_veterinary_service INT,
-    id_shift INT,
-) AS $$
+LANGUAGE plpgsql
+AS $$
 BEGIN
-    RETURN QUERY
-        INSERT INTO veterinary_appointment (
-            observations,
-            status,
-            register_date,
-            id_pet,
-            id_veterinary,
-            id_veterinary_service,
-            id_shift
-        )
-        VALUES (
-            p_observations,
-            p_status,
-            register_date,
-            p_id_pet,
-            p_id_veterinary,
-            p_id_veterinary_service,
-            p_id_shift
-        )
-        RETURNING
-            id,
-            observations,
-            status,
-            register_date,
-            id_pet,
-            id_veterinary,
-            id_veterinary_service,
-            id_shift;
+    INSERT INTO veterinary_appointment (
+        observations,
+        status,
+        register_date,
+        id_pet,
+        id_veterinary,
+        id_veterinary_service,
+        id_shift
+    )
+    VALUES (
+        p_observations,
+        p_status,
+        p_register_date,
+        p_id_pet,
+        p_id_veterinary,
+        p_id_veterinary_service,
+        p_id_shift
+    );
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 -- ELIMINAR UNA CITA
 CREATE OR REPLACE FUNCTION delete_veterinary_appointment(p_id INT)
@@ -75,6 +58,8 @@ BEGIN
     DELETE FROM veterinary_appointment WHERE id = p_id;
 END;
 $$ LANGUAGE plpgsql;
+
+
 
 -- OBTENER CITA POR ID
 CREATE OR REPLACE FUNCTION get_veterinary_appointment_by_id(p_id INT)
@@ -172,3 +157,5 @@ BEGIN
                 id_shift;
 END;
 $$ LANGUAGE plpgsql;
+
+

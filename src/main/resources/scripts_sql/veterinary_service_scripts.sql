@@ -107,3 +107,9 @@ BEGIN
     RETURNING id, name, description, price;
 END;
 $$ LANGUAGE plpgsql;
+
+
+-- INSERTAR SERVICIO MÉDICO
+INSERT INTO veterinary_service (name, description, price)
+VALUES
+('Consulta general', 'Revisión completa del estado de salud de la mascota.', 50.00);

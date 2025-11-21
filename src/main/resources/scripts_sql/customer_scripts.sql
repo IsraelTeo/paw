@@ -144,3 +144,8 @@ BEGIN
                 email;
 END;
 $$ LANGUAGE plpgsql;
+
+-- INSERTAR CLIENTE
+INSERT INTO customer (first_name, last_name, dni, phone_number, email)
+VALUES
+('Carlos', 'Ramírez', '12345678', '987654321', 'carlos.ramirez@example.com');

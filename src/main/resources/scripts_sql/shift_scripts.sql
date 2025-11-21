@@ -136,3 +136,8 @@ BEGIN
     RETURNING id, shift_date, time_start, time_end, available, id_veterinary;
 END;
 $$ LANGUAGE plpgsql;
+
+--- INSERTAR TURNO:
+INSERT INTO shift (shift_date, start_time, end_time, available, id_veterinary)
+VALUES
+('2025-11-05', '09:00:00', '13:00:00', TRUE, 1);

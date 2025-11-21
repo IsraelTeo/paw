@@ -14,7 +14,7 @@ public interface ShiftRepository extends JpaRepository<Shift, Long> {
 
     String FIND_SHIFT_BY_VETERINARY_AND_DATE = "SELECT s FROM Shift s WHERE s.veterinary.id = :veterinaryId AND s.date = :date";
 
-    // 🔹 Buscar los turnos que ya están reservados (no disponibles) de un veterinario en una fecha específica
+    // Buscar los turnos que ya están reservados (no disponibles) de un veterinario en una fecha específica
     String FIND_RESERVED_SHIFT_BY_VETERINARY_AND_DATE =
             "SELECT s FROM Shift s " +
                     "WHERE s.veterinary.id = :veterinaryId " +

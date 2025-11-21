@@ -136,3 +136,8 @@ BEGIN
     WHERE id = p_id;
 END;
 $$ LANGUAGE plpgsql;
+
+-- INSERTAR VETERINARIO
+INSERT INTO veterinary (first_name, last_name, birth_date, speciality, phone_number, email, dni)
+VALUES
+('Lucía', 'Fernández', '1990-03-12', 'Medicina general', '998877665', 'lucia.fernandez@vetclinic.com', '98765432');

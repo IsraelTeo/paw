@@ -151,3 +151,8 @@ BEGIN
     WHERE id = p_id;
 END;
 $$ LANGUAGE plpgsql;
+
+-- INSERTAR MASCOTA
+INSERT INTO pet (first_name, last_name, age, gender, specie, birth_date, id_customer)
+VALUES
+('Firulais', 'Ramírez', 3, 'MALE', 'Perro', '2022-05-10', 1);

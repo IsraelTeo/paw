@@ -46,7 +46,7 @@ public class VeterinaryAppointmentService {
     @Transactional(readOnly = true)
     public VeterinaryAppointmentResponseDTO getById(Long id){
         VeterinaryAppointment appointment = veterinaryAppointmentRepository.findById(id)
-                .orElseThrow(()-> {
+                .orElseThrow(() -> {
                     LOGGER.error("Cita no encontrada. ID: {}", id);
                     return new PawException(ApiErrorEnum.VETERINARY_APPOINTMENT_NOT_FOUND);
                     });
@@ -61,20 +61,25 @@ public class VeterinaryAppointmentService {
         VeterinaryService service = findVeterinaryService(request.idVeterinaryService());
         Shift shift = findShift(request.idShift());
 
-        // La fecha del turno de la cita debe ser en tiempo futuro
         validateAppointmentDateIsFuture(shift.getDate());
 
-        // La fecha del turno de la cita debe ser en una fecha que el médico trabaja
         List<Shift> veterinaryShifts = getShiftsForVeterinarianOnDate(veterinary.getId(),shift.getDate());
-
-        // El horario inicial y final del turno de la cita estar en el horario inicial y final que el médico trabaja
         Shift coincidentShift = validateShiftTimes(shift, veterinaryShifts);
 
-        // El horario inicial y final del turno no debe tener conflicto de horario con otro turno de cita reservado de ese médico
         List<Shift> reservedShifts = shiftRepository.findReservedShiftsByVeterinaryIdAndDate(veterinary.getId(), shift.getDate());
         validateShiftConflicts(coincidentShift , reservedShifts);
 
-        VeterinaryAppointment appointment = saveVeterinaryAppointment(request, pet, veterinary, service, shift);
+        VeterinaryAppointment appointment = VeterinaryAppointment.builder()
+                .status(request.status())
+                .observations(request.observations())
+                .registerDate(LocalDate.now())
+                .pet(pet)
+                .veterinary(veterinary)
+                .veterinaryService(service)
+                .shift(shift)
+                .build();
+
+        veterinaryAppointmentRepository.save(appointment);
 
         shift.setAvailable(false);
         shiftRepository.save(shift);
@@ -98,20 +103,15 @@ public class VeterinaryAppointmentService {
         VeterinaryService service = findVeterinaryService(request.idVeterinaryService());
         Shift newShift = findShift(request.idShift());
 
-        // La fecha del turno de la cita debe ser en tiempo futuro
         validateAppointmentDateIsFuture(newShift.getDate());
 
-        // La fecha del turno de la cita debe ser en una fecha que el médico trabaja
         List<Shift> veterinaryShifts = getShiftsForVeterinarianOnDate(veterinary.getId(), newShift.getDate());
 
-        // El horario inicial y final del turno de la cita estar en el horario inicial y final que el médico trabaja
         Shift coincidentShift = validateShiftTimes(newShift, veterinaryShifts);
 
-        // El horario inicial y final del turno no debe tener conflicto de horario con otro turno de cita reservado de ese médico
         List<Shift> reservedShifts = shiftRepository.findReservedShiftsByVeterinaryIdAndDate(veterinary.getId(), newShift.getDate());
         validateShiftConflicts(coincidentShift , reservedShifts);
 
-        // Liberar turno anterior si se cambió
         Shift previousShift = existingAppointment.getShift();
         if (!previousShift.getId().equals(newShift.getId())) {
             previousShift.setAvailable(true);
@@ -126,7 +126,6 @@ public class VeterinaryAppointmentService {
         existingAppointment.setVeterinaryService(service);
         existingAppointment.setShift(newShift);
 
-        // Marcar el nuevo turno como no disponible
         newShift.setAvailable(false);
         shiftRepository.save(newShift);
 
@@ -187,7 +186,6 @@ public class VeterinaryAppointmentService {
                 });
     }
 
-    // La fecha del turno de la cita debe ser en tiempo futuro
     private void validateAppointmentDateIsFuture(LocalDate date) {
         if (!date.isAfter(LocalDate.now())) {
             LOGGER.error("Fecha de turno inválida. Fecha: {}", date);
@@ -195,9 +193,7 @@ public class VeterinaryAppointmentService {
         }
     }
 
-    // La fecha del turno de la cita debe ser en una fecha que el médico trabaja
     private List<Shift> getShiftsForVeterinarianOnDate(Long veterinaryId, LocalDate appointmentDate){
-       // obtengo la fecha de la cita, y la busco en los turnos por fecha de los turnos del veterinario
         List<Shift> shifts = shiftRepository.findShiftByVeterinaryIdAndDate(veterinaryId, appointmentDate);
         if (shifts == null || shifts.isEmpty()) {
             LOGGER.error("El veterinario no trabaja en esta Fecha: {}", appointmentDate);
@@ -207,10 +203,10 @@ public class VeterinaryAppointmentService {
         return shifts;
     }
 
-    // El horario inicial y final del turno de la cita debe ser en el horario inicial y final que el médico trabaja
     private Shift validateShiftTimes(Shift appointmentShift, List<Shift> veterinaryShifts){
         return veterinaryShifts.stream()
-                .filter(s -> !appointmentShift.getStartTime().isBefore(s.getStartTime()) &&
+                .filter(s ->
+                        !appointmentShift.getStartTime().isBefore(s.getStartTime()) &&
                         !appointmentShift.getEndTime().isAfter(s.getEndTime()))
                 .findFirst()
                 .orElseThrow(() -> {
@@ -222,12 +218,12 @@ public class VeterinaryAppointmentService {
                 });
     }
 
-    // El horario inicial y final del turno no debe tener conflicto de horario con otro turno de cita reservado de ese médico
     private void validateShiftConflicts(Shift newAppointmentShift, List<Shift> existingShifts) {
         boolean hasConflict = existingShifts.stream()
-                .anyMatch(s ->
-                        (newAppointmentShift.getStartTime().isBefore(s.getEndTime()) &&
-                                newAppointmentShift.getEndTime().isAfter(s.getStartTime()))
+                .anyMatch(s -> (
+                                newAppointmentShift.getStartTime().isBefore(s.getEndTime()) &&
+                                newAppointmentShift.getEndTime().isAfter(s.getStartTime())
+                        )
                 );
 
         if (hasConflict) {
@@ -241,23 +237,5 @@ public class VeterinaryAppointmentService {
 
             throw new PawException(ApiErrorEnum.VETERINARY_SHIFT_CONFLICT);
         }
-    }
-
-    private VeterinaryAppointment saveVeterinaryAppointment(
-            VeterinaryAppointmentCreateRequestDTO request,
-            Pet pet,
-            Veterinary veterinary,
-            VeterinaryService service,
-            Shift shift
-    ) {
-        return veterinaryAppointmentRepository.saveVeterinaryAppointment(
-                request.status().toString(),
-                request.observations(),
-                LocalDate.now(),
-                pet.getId(),
-                veterinary.getId(),
-                service.getId(),
-                shift.getId()
-        );
     }
 }
