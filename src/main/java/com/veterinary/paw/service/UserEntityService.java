@@ -42,13 +42,13 @@ public class UserEntityService {
     }
 
     public UserResponseDTO register(UserCreateRequestDTO request) {
-        UserEntity newUser = userMapper.toEntity(request);
-        Optional<UserEntity> userExisting = userEntityRepository.findByEmail(request.email());
-        if (userExisting.isPresent()){
+        if (userEntityRepository.isExistsByEmail(request.email())) {
+
             LOGGER.error("Usuario con el email: {} ya existe", request.email());
             throw new PawException(ApiErrorEnum.USER_EMAIL_ALREADY_EXISTS);
         }
 
+        UserEntity newUser = userMapper.toEntity(request);
 
         UserEntity savedUser = userEntityRepository.save(newUser);
         LOGGER.info("Usuario registrado exitosamente con email: {}", savedUser.getEmail());

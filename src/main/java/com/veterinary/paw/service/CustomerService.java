@@ -42,6 +42,21 @@ public class CustomerService {
     }
 
     public CustomerResponseDTO register(CustomerCreateRequestDTO request) {
+        if (customerRepository.isExistsByEmail(request.email())){
+            LOGGER.error("El email: {} ya pertenece a otro cliente.", request.email());
+            throw new PawException(ApiErrorEnum.CUSTOMER_EMAIL_ALREADY_EXISTS);
+        }
+
+        if (customerRepository.isExistsByDni(request.dni())){
+            LOGGER.error("El DNI: {} ya pertenece a otro cliente.", request.dni());
+            throw new PawException(ApiErrorEnum.CUSTOMER_DNI_ALREADY_EXISTS);
+        }
+
+        if (customerRepository.isExistsByPhoneNumber(request.phoneNumber())){
+            LOGGER.error("El número de teléfono: {} ya pertenece a otro cliente.", request.phoneNumber());
+            throw new PawException(ApiErrorEnum.CUSTOMER_PHONE_NUMBER_ALREADY_EXISTS);
+        }
+
         Customer newCustomer = customerMapper.toEntity(request);
 
         Customer savedCustomer = customerRepository.save(newCustomer);
@@ -52,9 +67,30 @@ public class CustomerService {
     public CustomerResponseDTO update(Long id, CustomerCreateRequestDTO request) {
         Customer customerToUpdate = customerRepository.findById(id)
                 .orElseThrow(() -> {
-                    LOGGER.error("Cliente no para actualizar ID: {}", id);
+                    LOGGER.error("Cliente no encontrado para actualizar ID: {}", id);
                     return new PawException(ApiErrorEnum.CUSTOMER_NOT_FOUND);
                 });
+
+        if (!customerToUpdate.getEmail().equals(request.email())) {
+            if (customerRepository.isExistsByEmail(request.email())) {
+                LOGGER.error("El email: {} ya pertenece a otro cliente.", request.email());
+                throw new PawException(ApiErrorEnum.CUSTOMER_EMAIL_ALREADY_EXISTS);
+            }
+        }
+
+        if (!customerToUpdate.getDni().equals(request.dni())) {
+            if (customerRepository.isExistsByDni(request.dni())) {
+                LOGGER.error("El DNI: {} ya pertenece a otro cliente.", request.dni());
+                throw new PawException(ApiErrorEnum.CUSTOMER_DNI_ALREADY_EXISTS);
+            }
+        }
+
+        if (!customerToUpdate.getPhoneNumber().equals(request.phoneNumber())) {
+            if (customerRepository.isExistsByPhoneNumber(request.phoneNumber())) {
+                LOGGER.error("El número de teléfono: {} ya pertenece a otro cliente.", request.phoneNumber());
+                throw new PawException(ApiErrorEnum.CUSTOMER_PHONE_NUMBER_ALREADY_EXISTS);
+            }
+        }
 
         customerMapper.updateEntityFromDto(customerToUpdate, request);
 

@@ -57,18 +57,4 @@ public class Veterinary {
             orphanRemoval = true
     )
     private List<VeterinaryAppointment> appointments;
-
-
-    /*
-    @Enumerated(EnumType.STRING)
-    @ElementCollection(targetClass = DayAvailableEnum.class)
-    @CollectionTable(
-            name = "veterinary_available_days",
-            joinColumns = @JoinColumn(name = "veterinary_id")
-    )
-    @Column(name = "available_days")
-    private List<DayOfWeek> availableDays;
-
-     */
-
 }
